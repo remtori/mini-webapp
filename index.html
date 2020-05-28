@@ -3,100 +3,11 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Edge Detection</title>
-	<style>
-		label {
-			border: 2px solid rgb(94, 94, 94);
-			background-color: #e7e7e7;
-			cursor: pointer;
-		}
-	</style>
+	<title>Index</title>
 </head>
 <body>
-	<div style="text-align: center; margin: 16px;">
-		<h2>Edge Detection using Sobel Operator</h2>
-		<h4>by HCMUS-1712209</h4>
-		<label for="filePicker">Pick a video</label>
-		<input id="filePicker" type="file" accept="video/*" style="display: none;">
-	</div>
-	<div>
-		<video id="video" style="display: none;" controls autoplay></video>
-		<canvas id="cvs"></canvas>
-	</div>
-	<script type="text/javascript">
-		const ctx = cvs.getContext('2d');
-
-		filePicker.addEventListener('change', function() {
-			if (this.files.length === 0) return;
-			const file = this.files[0];
-			const reader = new FileReader();
-			reader.onload = (e) => {
-				video.src = e.target.result;
-			};
-			reader.readAsDataURL(file);
-		});
-
-		let cancelId = null;
-		video.addEventListener('canplay', () => {
-			cvs.width = video.videoWidth;
-			cvs.height = video.videoHeight;
-			video.style.display = 'inline-block';
-
-			cancelAnimationFrame(cancelId);
-			cancelId = requestAnimationFrame(render);
-		});
-
-		function render() {
-			const width = cvs.width;
-			const height = cvs.height;
-
-			ctx.drawImage(video, 0, 0);
-			const imageData = ctx.getImageData(0, 0, width, height);
-			const grayScaledData = new Uint8ClampedArray(width * height);
-
-			// Grayscale image with REC 601 (BT.601) formula
-			for (let i = 0; i < width; i++) {
-				for (let j = 0; j < height; j++) {
-					let luma = 0;
-					luma += imageData.data[(i + j * width) * 4 + 0] * 0.299;
-					luma += imageData.data[(i + j * width) * 4 + 1] * 0.587;
-					luma += imageData.data[(i + j * width) * 4 + 2] * 0.114;
-					// Ignore alpha
-					grayScaledData[i + j * width] = Math.round(luma);
-				}
-			}
-
-			const outputData = new Uint8ClampedArray(width * height * 4);
-
-			for (let i = 1; i < width - 1; i++) {
-				for (let j = 1; j < height - 1; j++) {
-					// Sobel operator
-					const gx = grayScaledData[(i - 1) + (j - 1) * width] * -1 +
-							   grayScaledData[(i + 1) + (j - 1) * width] *  1 +
-							   grayScaledData[(i - 1) + (j    ) * width] * -2 +
-							   grayScaledData[(i + 1) + (j    ) * width] *  2 +
-							   grayScaledData[(i - 1) + (j + 1) * width] * -1 +
-							   grayScaledData[(i + 1) + (j + 1) * width] *  1;
-
-					const gy = grayScaledData[(i - 1) + (j - 1) * width] *  1 +
-							   grayScaledData[(i    ) + (j - 1) * width] *  2 +
-							   grayScaledData[(i + 1) + (j - 1) * width] *  1 +
-							   grayScaledData[(i - 1) + (j + 1) * width] * -1 +
-							   grayScaledData[(i    ) + (j + 1) * width] * -2 +
-							   grayScaledData[(i + 1) + (j + 1) * width] * -1;
-
-					const r = Math.round(Math.sqrt(gx * gx + gy * gy));
-
-					outputData[(i + j * width) * 4 + 0] = r;
-					outputData[(i + j * width) * 4 + 1] = r;
-					outputData[(i + j * width) * 4 + 2] = r;
-					outputData[(i + j * width) * 4 + 3] = 255;
-				}
-			}
-
-			ctx.putImageData(new ImageData(outputData, width, height), 0, 0);
-			cancelId = requestAnimationFrame(render);
-		}
-	</script>
+	<ul>
+		<li><a href="./edge-detection.html">Edge Detection</a></li>
+	</ul>
 </body>
 </html>
