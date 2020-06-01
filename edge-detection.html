@@ -55,42 +55,50 @@
 			const grayScaledData = new Uint8ClampedArray(width * height);
 
 			// Grayscale image with REC 601 (BT.601) formula
-			for (let i = 0; i < width; i++) {
-				for (let j = 0; j < height; j++) {
-					let luma = 0;
-					luma += imageData.data[(i + j * width) * 4 + 0] * 0.299;
-					luma += imageData.data[(i + j * width) * 4 + 1] * 0.587;
-					luma += imageData.data[(i + j * width) * 4 + 2] * 0.114;
-					// Ignore alpha
-					grayScaledData[i + j * width] = Math.round(luma);
-				}
+			let luma = 0;
+			for (let i = 0; i < width * height * 4; i += 4) {
+				luma = 0;
+				luma += imageData.data[i + 0] * 0.299;
+				luma += imageData.data[i + 1] * 0.587;
+				luma += imageData.data[i + 2] * 0.114;
+				// Ignore alpha
+
+				// Should not result in float because we increase i by 4 each time
+				grayScaledData[i / 4] = Math.round(luma);
 			}
 
 			const outputData = new Uint8ClampedArray(width * height * 4);
 
+			let gx = 0, gy = 0, r = 0, h = 0, o = 0;
 			for (let i = 1; i < width - 1; i++) {
 				for (let j = 1; j < height - 1; j++) {
+					h = j * width;
 					// Sobel operator
-					const gx = grayScaledData[(i - 1) + (j - 1) * width] * -1 +
-							   grayScaledData[(i + 1) + (j - 1) * width] *  1 +
-							   grayScaledData[(i - 1) + (j    ) * width] * -2 +
-							   grayScaledData[(i + 1) + (j    ) * width] *  2 +
-							   grayScaledData[(i - 1) + (j + 1) * width] * -1 +
-							   grayScaledData[(i + 1) + (j + 1) * width] *  1;
+					gx = (
+						- grayScaledData[(i - 1) + h - width]
+						+ grayScaledData[(i + 1) + h - width]
+						-(grayScaledData[(i - 1) + h        ] << 1)
+						+(grayScaledData[(i + 1) + h        ] << 1)
+						- grayScaledData[(i - 1) + h + width]
+						+ grayScaledData[(i + 1) + h + width]
+					);
 
-					const gy = grayScaledData[(i - 1) + (j - 1) * width] *  1 +
-							   grayScaledData[(i    ) + (j - 1) * width] *  2 +
-							   grayScaledData[(i + 1) + (j - 1) * width] *  1 +
-							   grayScaledData[(i - 1) + (j + 1) * width] * -1 +
-							   grayScaledData[(i    ) + (j + 1) * width] * -2 +
-							   grayScaledData[(i + 1) + (j + 1) * width] * -1;
+					gy = (
+						+ grayScaledData[(i - 1) + h - width]
+						+(grayScaledData[(i    ) + h - width] << 1)
+						+ grayScaledData[(i + 1) + h - width]
+						- grayScaledData[(i - 1) + h + width]
+						-(grayScaledData[(i    ) + h + width] << 1)
+						- grayScaledData[(i + 1) + h + width]
+					);
 
-					const r = Math.round(Math.sqrt(gx * gx + gy * gy));
+					r = Math.round(Math.sqrt(gx * gx + gy * gy));
 
-					outputData[(i + j * width) * 4 + 0] = r;
-					outputData[(i + j * width) * 4 + 1] = r;
-					outputData[(i + j * width) * 4 + 2] = r;
-					outputData[(i + j * width) * 4 + 3] = 255;
+					o = (i + h) * 4;
+					outputData[o + 0] = r;
+					outputData[o + 1] = r;
+					outputData[o + 2] = r;
+					outputData[o + 3] = 255;
 				}
 			}
 
